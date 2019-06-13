@@ -4,6 +4,7 @@
   "description": "S3 Logs Parser",
   "keywords": [
     "s3",
+    "log parser",
     "analytics"
   ],
   "homepage": "https://mtr-design.com",
