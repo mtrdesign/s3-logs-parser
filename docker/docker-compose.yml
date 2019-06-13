@@ -1,0 +1,9 @@
+version: '3'
+services:
+  s3-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./../:/usr/src/s3-analytics
+    tty: true

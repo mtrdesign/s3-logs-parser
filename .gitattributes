@@ -1,0 +1,4 @@
+/.docker export-ignore
+/tests export-ignore
+
+* text=auto eol=lf
