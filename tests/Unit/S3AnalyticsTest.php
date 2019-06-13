@@ -248,6 +248,8 @@ class S3AnalyticsTest extends TestCase
 
         $this->assertIsString($response);
 
+        echo $response;
+
         $responseToArray = json_decode($response, true);
 
         $this->assertIsArray($responseToArray);
