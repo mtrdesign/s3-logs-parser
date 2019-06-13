@@ -53,6 +53,6 @@
     ],
     "phpcs": "phpcs -p --standard=PSR2 src tests",
     "phpstan": "phpstan analyse --level 7 src",
-    "phpunit": "phpunit --verbose"
+    "phpunit": "phpunit --coverage-clover=coverage.xml --verbose"
   }
 }
