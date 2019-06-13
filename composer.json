@@ -1,15 +1,15 @@
 {
-  "name": "mtrdesign/s3-analytics",
+  "name": "mtrdesign/s3-logs-parser",
   "type": "library",
-  "description": "Analytics for Amazon S3",
+  "description": "S3 Logs Parser",
   "keywords": [
     "s3",
     "analytics"
   ],
   "homepage": "https://mtr-design.com",
   "support": {
-    "issues": "https://github.com/mtrdesign/s3-analytics/issues",
-    "source": "https://github.com/mtrdesign/s3-analytics"
+    "issues": "https://github.com/mtrdesign/s3-logs-parser/issues",
+    "source": "https://github.com/mtrdesign/s3-logs-parser"
   },
   "authors": [
     {
