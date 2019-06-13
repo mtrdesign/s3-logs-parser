@@ -103,6 +103,21 @@ class S3AnalyticsTest extends TestCase
      * @test
      * @covers \S3Analytics\S3Analytics::__construct
      * @covers \S3Analytics\S3Analytics::getStatistics
+     * @covers \S3Analytics\S3Analytics::getClient
+     */
+    public function iShouldSeeErrorOnWrongAwsCredentials()
+    {
+        $this->expectException(\Aws\S3\Exception\S3Exception::class);
+
+        $s3Analytics = new S3Analytics();
+
+        $s3Analytics->getStatistics('bn-test', 'bp-', Carbon::now());
+    }
+
+    /**
+     * @test
+     * @covers \S3Analytics\S3Analytics::__construct
+     * @covers \S3Analytics\S3Analytics::getStatistics
      * @covers \S3Analytics\S3Analytics::parseObject
      * @covers \S3Analytics\S3Analytics::getClient
      */
