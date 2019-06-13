@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
-use Mockery;
-use Carbon\Carbon;
-use Tests\TestCase;
 use S3Analytics\S3Analytics;
 use Aws\S3\S3Client;
+use Tests\TestCase;
+use Carbon\Carbon;
+use Mockery;
 
 class S3AnalyticsTest extends TestCase
 {
@@ -76,7 +76,7 @@ class S3AnalyticsTest extends TestCase
     /**
      * @test
      * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getConfigs
+     * @covers \S3Analytics\S3Analytics::getConfig
      */
     public function iShouldNotBeAbleToSetInvalidConfigs()
     {
@@ -123,7 +123,7 @@ class S3AnalyticsTest extends TestCase
         $this->assertIsArray($responseToArray);
         $this->assertEquals(true, $responseToArray['success']);
         $this->assertEquals('bn-test', $responseToArray['statistics']['bucket']);
-        $this->assertEquals('bp-' . Carbon::now()->format('Y-m-d'), $responseToArray['statistics']['prefix']);
+        $this->assertEquals('bp-'.Carbon::now()->format('Y-m-d'), $responseToArray['statistics']['prefix']);
     }
 
     /**

@@ -2,9 +2,9 @@
 
 namespace S3Analytics;
 
-use Carbon\Carbon;
-use Aws\S3\S3Client;
 use Aws\Credentials\Credentials;
+use Aws\S3\S3Client;
+use Carbon\Carbon;
 
 class S3Analytics
 {
@@ -20,13 +20,14 @@ class S3Analytics
     ];
 
     /** @var string $regex https://docs.aws.amazon.com/AmazonS3/latest/dev/LogFormat.html */
-    protected $regex = '/(?P<owner>\S+) (?P<bucket>\S+) (?P<time>\[[^]]*\]) (?P<ip>\S+) ' .
-        '(?P<requester>\S+) (?P<reqid>\S+) (?P<operation>\S+) (?P<key>\S+) (?P<request>"[^"]*") ' .
-        '(?P<status>\S+) (?P<error>\S+) (?P<bytes>\S+) (?P<size>\S+) (?P<totaltime>\S+) ' .
+    protected $regex = '/(?P<owner>\S+) (?P<bucket>\S+) (?P<time>\[[^]]*\]) (?P<ip>\S+) '.
+        '(?P<requester>\S+) (?P<reqid>\S+) (?P<operation>\S+) (?P<key>\S+) (?P<request>"[^"]*") '.
+        '(?P<status>\S+) (?P<error>\S+) (?P<bytes>\S+) (?P<size>\S+) (?P<totaltime>\S+) '.
         '(?P<turnaround>\S+) (?P<referrer>"[^"]*") (?P<useragent>"[^"]*") (?P<version>\S)/';
 
     /**
      * S3Analytics constructor.
+     *
      * @param array $configs
      * @param S3Client|null $client
      */
@@ -38,6 +39,7 @@ class S3Analytics
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function getConfig(string $key) : string
@@ -47,6 +49,7 @@ class S3Analytics
 
     /**
      * @param array $configs
+     *
      * @return array
      */
     public function setConfigs(array $configs = []) : array
@@ -68,6 +71,7 @@ class S3Analytics
      * @param string $bucketName
      * @param string $bucketPrefix
      * @param string $date
+     *
      * @return string|false
      */
     public function getStatistics(string $bucketName, string $bucketPrefix, string $date)
@@ -120,6 +124,7 @@ class S3Analytics
     /**
      * @param string $bucketName
      * @param string $key
+     *
      * @return array
      */
     public function parseObject(string $bucketName, string $key) : array
@@ -156,7 +161,7 @@ class S3Analytics
                 'credentials' => new Credentials(
                     $this->getConfig('access_key'),
                     $this->getConfig('secret_key')
-                )
+                ),
             ]);
         }
 
