@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
-use S3Analytics\S3Analytics;
 use Aws\S3\S3Client;
-use Tests\TestCase;
 use Carbon\Carbon;
 use Mockery;
+use S3Analytics\S3Analytics;
+use Tests\TestCase;
 
 class S3AnalyticsTest extends TestCase
 {

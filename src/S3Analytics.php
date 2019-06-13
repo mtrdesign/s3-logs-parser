@@ -28,7 +28,7 @@ class S3Analytics
     /**
      * S3Analytics constructor.
      *
-     * @param array $configs
+     * @param array         $configs
      * @param S3Client|null $client
      */
     public function __construct(array $configs = [], S3Client $client = null)
