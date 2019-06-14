@@ -1,12 +1,12 @@
 <?php
 
-namespace S3Analytics;
+namespace S3LogsParser;
 
 use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 
-class S3Analytics
+class S3LogsParser
 {
     /** @var \Aws\S3\S3Client|null $client */
     protected $client = null;
@@ -26,7 +26,7 @@ class S3Analytics
         '(?P<turnaround>\S+) (?P<referrer>"[^"]*") (?P<useragent>"[^"]*") (?P<version>\S)/';
 
     /**
-     * S3Analytics constructor.
+     * S3LogsParser constructor.
      *
      * @param array         $configs
      * @param S3Client|null $client
@@ -74,7 +74,7 @@ class S3Analytics
      *
      * @return string|false
      */
-    public function getStatistics(string $bucketName, string $bucketPrefix, string $date)
+    public function getStats(string $bucketName, string $bucketPrefix, string $date)
     {
         $statistics = [];
 

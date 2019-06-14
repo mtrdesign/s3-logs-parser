@@ -38,7 +38,7 @@
   },
   "autoload": {
     "psr-4": {
-      "S3Analytics\\": "src/"
+      "S3LogsParser\\": "src/"
     }
   },
   "autoload-dev": {

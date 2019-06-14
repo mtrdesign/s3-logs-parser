@@ -1,4 +1,4 @@
-# S3 Logs Parser
+# AWS S3 Logs Parser
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/mtrdesign/s3-logs-parser.svg)](https://packagist.org/packages/mtrdesign/s3-logs-parser)
 [![Total Downloads](https://img.shields.io/packagist/dt/mtrdesign/s3-logs-parser.svg)](https://packagist.org/packages/mtrdesign/s3-logs-parser)
@@ -7,7 +7,7 @@
 [![StyleCI](https://styleci.io/repos/191744669/shield?style=flat-square)](https://styleci.io/repos/191744669)
 [![PHPStan](https://img.shields.io/badge/PHPStan-enabled-44CC11.svg?longCache=true)](https://github.com/phpstan/phpstan)
 
-Server access logging provides detailed records for the requests that are made to a bucket.
+AWS S3 Logs Parser is a simple [PHP](https://php.net/) package to parse [Amazon Simple Storage Service (Amazon S3)](https://aws.amazon.com/s3/) logs into a readable JSON format. The detailed usage report will show you how much times a file is downloaded and how much bytes are transferred.
 
 ## Getting Started
 
@@ -27,9 +27,9 @@ Create a service instance:
 ```php
 <?php
 
-use S3Analytics\S3Analytics;
+use S3LogsParser\S3LogsParser;
 
-$s3Analytics = new S3Analytics([
+$S3LogsParser = new S3LogsParser([
     'version' => 'latest',
     'region' => $awsBucketRegion,
     'access_key' => $awsAccessKey,
@@ -44,7 +44,7 @@ Optionally, you can set and update service configurations via `setConfigs()` met
 ```php
 <?php
 
-$s3Analytics->setConfigs([
+$S3LogsParser->setConfigs([
     'version' => 'latest',
     'region' => $awsBucketRegion,
     'access_key' => $awsAccessKey,
@@ -60,12 +60,12 @@ Finally, you can get file's `download` and `bandwidth` statistics for a specific
 ```php
 <?php
 
-$s3Analytics->getStatistics($awsBucketName, $awsBucketPrefix, $date);
+$S3LogsParser->getStats($awsBucketName, $awsBucketPrefix, $date);
 
 ?>
 ```
 
-> It is recommended to pass [Carbon](https://carbon.nesbot.com/) string to this function.
+> It is recommended to pass [Carbon](https://carbon.nesbot.com/) date string to this method.
 
 This is how service response should look like:
 

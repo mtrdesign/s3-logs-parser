@@ -5,121 +5,121 @@ namespace Tests\Unit;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 use Mockery;
-use S3Analytics\S3Analytics;
+use S3LogsParser\S3LogsParser;
 use Tests\TestCase;
 
-class S3AnalyticsTest extends TestCase
+class S3LogsParserTest extends TestCase
 {
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getConfig
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getConfig
      */
     public function iShouldBeAbleToSetConfigsViaConstructor()
     {
-        $s3Analytics = new S3Analytics([
+        $S3LogsParser = new S3LogsParser([
             'region' => '1',
             'access_key' => '2',
             'secret_key' => '3',
         ]);
 
-        $this->assertEquals('1', $s3Analytics->getConfig('region'));
-        $this->assertEquals('2', $s3Analytics->getConfig('access_key'));
-        $this->assertEquals('3', $s3Analytics->getConfig('secret_key'));
+        $this->assertEquals('1', $S3LogsParser->getConfig('region'));
+        $this->assertEquals('2', $S3LogsParser->getConfig('access_key'));
+        $this->assertEquals('3', $S3LogsParser->getConfig('secret_key'));
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::setConfigs
-     * @covers \S3Analytics\S3Analytics::getConfig
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::setConfigs
+     * @covers \S3LogsParser\S3LogsParser::getConfig
      */
     public function iShouldBeAbleToSetConfigsViaSetConfigsMethod()
     {
-        $s3Analytics = new S3Analytics();
+        $S3LogsParser = new S3LogsParser();
 
-        $s3Analytics->setConfigs([
+        $S3LogsParser->setConfigs([
             'region' => '1',
             'access_key' => '2',
             'secret_key' => '3',
         ]);
 
-        $this->assertEquals('1', $s3Analytics->getConfig('region'));
-        $this->assertEquals('2', $s3Analytics->getConfig('access_key'));
-        $this->assertEquals('3', $s3Analytics->getConfig('secret_key'));
+        $this->assertEquals('1', $S3LogsParser->getConfig('region'));
+        $this->assertEquals('2', $S3LogsParser->getConfig('access_key'));
+        $this->assertEquals('3', $S3LogsParser->getConfig('secret_key'));
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::setConfigs
-     * @covers \S3Analytics\S3Analytics::getConfig
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::setConfigs
+     * @covers \S3LogsParser\S3LogsParser::getConfig
      */
     public function iShouldBeAbleToOverrideConstructorConfigsViaSetConfigsMethod()
     {
-        $s3Analytics = new S3Analytics([
+        $S3LogsParser = new S3LogsParser([
             'region' => '1',
             'access_key' => '2',
             'secret_key' => '3',
         ]);
 
-        $s3Analytics->setConfigs([
+        $S3LogsParser->setConfigs([
             'access_key' => '4',
             'secret_key' => '5',
         ]);
 
-        $this->assertEquals('1', $s3Analytics->getConfig('region'));
-        $this->assertEquals('4', $s3Analytics->getConfig('access_key'));
-        $this->assertEquals('5', $s3Analytics->getConfig('secret_key'));
+        $this->assertEquals('1', $S3LogsParser->getConfig('region'));
+        $this->assertEquals('4', $S3LogsParser->getConfig('access_key'));
+        $this->assertEquals('5', $S3LogsParser->getConfig('secret_key'));
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getConfig
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getConfig
      */
     public function iShouldNotBeAbleToSetInvalidConfigs()
     {
-        $s3Analytics = new S3Analytics([
+        $S3LogsParser = new S3LogsParser([
             'test' => 'test12345',
         ]);
 
-        $this->assertEmpty($s3Analytics->getConfig('test'));
+        $this->assertEmpty($S3LogsParser->getConfig('test'));
 
-        $s3Analytics = new S3Analytics([
+        $S3LogsParser = new S3LogsParser([
             'region' => [],
         ]);
 
-        $this->assertEmpty($s3Analytics->getConfig('region'));
+        $this->assertEmpty($S3LogsParser->getConfig('region'));
 
-        $s3Analytics->setConfigs([
+        $S3LogsParser->setConfigs([
             'region' => [],
         ]);
 
-        $this->assertEmpty($s3Analytics->getConfig('region'));
+        $this->assertEmpty($S3LogsParser->getConfig('region'));
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getStatistics
-     * @covers \S3Analytics\S3Analytics::getClient
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getStats
+     * @covers \S3LogsParser\S3LogsParser::getClient
      */
     public function iShouldSeeErrorOnWrongAwsCredentials()
     {
         $this->expectException(\Aws\S3\Exception\S3Exception::class);
 
-        $s3Analytics = new S3Analytics();
+        $S3LogsParser = new S3LogsParser();
 
-        $s3Analytics->getStatistics('bn-test', 'bp-', Carbon::now());
+        $S3LogsParser->getStats('bn-test', 'bp-', Carbon::now());
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getStatistics
-     * @covers \S3Analytics\S3Analytics::parseObject
-     * @covers \S3Analytics\S3Analytics::getClient
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getStats
+     * @covers \S3LogsParser\S3LogsParser::parseObject
+     * @covers \S3LogsParser\S3LogsParser::getClient
      */
     public function iShouldBeAbleToSetDateAsCarbon()
     {
@@ -127,9 +127,9 @@ class S3AnalyticsTest extends TestCase
 
         $S3Client->shouldReceive('getPaginator')->andReturn([]);
 
-        $s3Analytics = new S3Analytics([], $S3Client);
+        $S3LogsParser = new S3LogsParser([], $S3Client);
 
-        $response = $s3Analytics->getStatistics('bn-test', 'bp-', Carbon::now());
+        $response = $S3LogsParser->getStats('bn-test', 'bp-', Carbon::now());
 
         $this->assertIsString($response);
 
@@ -143,10 +143,10 @@ class S3AnalyticsTest extends TestCase
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getStatistics
-     * @covers \S3Analytics\S3Analytics::parseObject
-     * @covers \S3Analytics\S3Analytics::getClient
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getStats
+     * @covers \S3LogsParser\S3LogsParser::parseObject
+     * @covers \S3LogsParser\S3LogsParser::getClient
      */
     public function iShouldBeAbleToSetDateAsString()
     {
@@ -154,9 +154,9 @@ class S3AnalyticsTest extends TestCase
 
         $S3Client->shouldReceive('getPaginator')->andReturn([]);
 
-        $s3Analytics = new S3Analytics([], $S3Client);
+        $S3LogsParser = new S3LogsParser([], $S3Client);
 
-        $response = $s3Analytics->getStatistics('bn-test', 'bp-', '2018-10-31');
+        $response = $S3LogsParser->getStats('bn-test', 'bp-', '2018-10-31');
 
         $this->assertIsString($response);
 
@@ -170,8 +170,8 @@ class S3AnalyticsTest extends TestCase
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getStatistics
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getStats
      */
     public function iShouldNotBeAbleToSetInvalidDate()
     {
@@ -184,19 +184,19 @@ class S3AnalyticsTest extends TestCase
 
         $S3Client->shouldReceive('getPaginator')->andReturn([]);
 
-        $s3Analytics = new S3Analytics([], $S3Client);
+        $S3LogsParser = new S3LogsParser([], $S3Client);
 
-        $s3Analytics->getStatistics('', '', '123');
+        $S3LogsParser->getStats('', '', '123');
     }
 
     /**
      * @test
-     * @covers \S3Analytics\S3Analytics::__construct
-     * @covers \S3Analytics\S3Analytics::getStatistics
-     * @covers \S3Analytics\S3Analytics::parseObject
-     * @covers \S3Analytics\S3Analytics::getClient
+     * @covers \S3LogsParser\S3LogsParser::__construct
+     * @covers \S3LogsParser\S3LogsParser::getStats
+     * @covers \S3LogsParser\S3LogsParser::parseObject
+     * @covers \S3LogsParser\S3LogsParser::getClient
      */
-    public function iShouldBeAbleToGetStatistics()
+    public function iShouldBeAbleTogetStats()
     {
         $S3Client = Mockery::mock(S3Client::class);
 
@@ -242,13 +242,11 @@ class S3AnalyticsTest extends TestCase
             ->once()
             ->andReturn($fixture_6);
 
-        $s3Analytics = new S3Analytics([], $S3Client);
+        $S3LogsParser = new S3LogsParser([], $S3Client);
 
-        $response = $s3Analytics->getStatistics('bn-test', 'bp-', '2018-10-31');
+        $response = $S3LogsParser->getStats('bn-test', 'bp-', '2018-10-31');
 
         $this->assertIsString($response);
-
-        echo $response;
 
         $responseToArray = json_decode($response, true);
 
