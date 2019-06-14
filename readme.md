@@ -88,3 +88,7 @@ This is how service response should look like:
     }
 }
 ```
+
+## License
+
+AWS S3 Logs Parser is open source and available under the [MIT License](LICENSE.md).
