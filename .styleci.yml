@@ -1,2 +1,1 @@
-php:
-  preset: psr2
+preset: psr2
