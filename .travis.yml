@@ -1,7 +1,11 @@
 language: php
 
 php:
-  - 7.1
+  - 7.4
+
+env:
+  global:
+    - XDEBUG_MODE=coverage
 
 cache:
   directories:

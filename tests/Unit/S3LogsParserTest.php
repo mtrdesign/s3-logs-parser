@@ -107,7 +107,7 @@ class S3LogsParserTest extends TestCase
      */
     public function iShouldSeeErrorOnWrongAwsCredentials()
     {
-        $this->expectException(\Aws\S3\Exception\S3Exception::class);
+        $this->expectException(\Aws\Exception\InvalidRegionException::class);
 
         $S3LogsParser = new S3LogsParser();
 
