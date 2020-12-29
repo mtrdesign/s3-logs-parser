@@ -22,7 +22,7 @@
   "license": "MIT",
   "minimum-stability": "stable",
   "require": {
-    "php": "^7.1|^8.0",
+    "php": "^7.4|^8.0",
     "ext-json": "*",
     "aws/aws-sdk-php": "^3.100",
     "nesbot/carbon": "^2.19"
