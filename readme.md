@@ -21,6 +21,22 @@ $ composer require mtrdesign/s3-logs-parser
 ```
 
 ## Usage
+### Read Log Files From Local Storage
+Extracts statistics much more quickly if you have already downloaded the logs to local storage with something like AWS CLI `aws s3 sync`.
+
+```php
+<?php
+
+$S3LogsParser->setConfigs([
+    'version' => 'latest',
+    'local_log_dir' => 'path/to/logs/that_i_already_downloaded/'
+]);
+
+?>
+```
+
+### Read Log Files Directly From S3 Bucket
+#### Via Direct Instantiation Of Service Object
 
 Create a service instance:
 
@@ -39,8 +55,7 @@ $S3LogsParser = new S3LogsParser([
 ?>
 ```
 
-Optionally, you can set and update service configurations via `setConfigs()` method:
-
+#### By Setting Configuration Parameters
 ```php
 <?php
 
@@ -54,20 +69,18 @@ $S3LogsParser->setConfigs([
 ?>
 ```
 
-Finally, you can get file's `download` and `bandwidth` statistics for a specific date in this way:
+### Extracting Statistics
+Things like `download`, `bandwidth`, etc.
+
+`$date` is an optional param.  Pass a [Carbon](https://carbon.nesbot.com/) formatted date string.  S3 logs tend to have filenames that look like `2022-05-02-19-18-32-91D293838329CB5E6`.  If `$date` is provided the `%Y-%m-%d` formatted date string will be used as a prefix to match log filenames.
+
 
 
 ```php
-<?php
-
 $S3LogsParser->getStats($awsBucketName, $awsBucketPrefix, $date);
-
-?>
 ```
 
-> It is recommended to pass [Carbon](https://carbon.nesbot.com/) date string to this method.
-
-This is how service response should look like:
+`getStats()` response should be something like this:
 
 ```json
 {
@@ -88,6 +101,9 @@ This is how service response should look like:
     }
 }
 ```
+
+## Development
+You can set the optional configuration parameter `debug_mode` to see a more verbose output.
 
 ## License
 
