@@ -36,9 +36,8 @@ $S3LogsParser->setConfigs([
 ```
 
 ### Read Log Files Directly From S3 Bucket
-#### Via Direct Instantiation Of Service Object
 
-Create a service instance:
+Via direct instantiation of `S3LogsParser` object:
 
 ```php
 <?php
@@ -55,7 +54,7 @@ $S3LogsParser = new S3LogsParser([
 ?>
 ```
 
-#### By Setting Configuration Parameters
+By Setting configuration parameters:
 ```php
 <?php
 
