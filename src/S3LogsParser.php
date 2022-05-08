@@ -240,6 +240,7 @@ class S3LogsParser
             if (isset($item['totaltime'])) {
                 $totalRequestTimeInMinutes = (float) $item['totaltime'] / 1000.0 / 60.0;
                 $statistics[$s3ObjectKey]['totalRequestTimeInMinutes'] += $totalRequestTimeInMinutes;
+                $statistics[$s3ObjectKey]['totaltime'] += (int) $item['totaltime'];
             }
         }
 
