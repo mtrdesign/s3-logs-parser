@@ -18,7 +18,7 @@ class S3LogsParser
     /** @var array $configs */
     protected $configs = [
         'version' => 'latest',
-        'debug_mode' => false,
+        'debug_mode' => '',
         'region' => '',
         'access_key' => '',
         'secret_key' => '',
@@ -161,7 +161,7 @@ class S3LogsParser
     /**
      * @param string $logDir
      *
-     * @return hash
+     * @return array
      */
     public function loadLogsFromLocalDir(string $logDir) : array
     {
@@ -175,7 +175,7 @@ class S3LogsParser
               $processedLogs = $this->processLogsStringToArray($fileContents);
               $logLines = array_merge($logLines, $processedLogs['output']);
 
-              if ($this->debugMode()) {
+              if ($this->isDebugModeEnabled()) {
                 print 'Read ' . count($processedLogs['output']) . ' lines from file: ' . $file->getFilename() . "...\n";
               }
 
@@ -203,38 +203,43 @@ class S3LogsParser
         $statistics = [];
 
         foreach ($parsedLogs as $item) {
-            if (isset($item['key']) && mb_strlen($item['key'])) {
-                foreach(self::COLUMNS_TO_KEEP_RUNNING_TOTALS_FOR as $column_name) {
-                    if (!isset($statistics[$item['key']][$column_name])) {
-                        $statistics[$item['key']][$column_name] = 0;
-                    }
+            if (!isset($item['key']) || !mb_strlen($item['key'])) {
+                print "WARNING: Missing key in log line; skipping:\n" . $item;
+                continue;
+            }
+
+            $s3ObjectKey = $item['key'];
+
+            foreach(self::COLUMNS_TO_KEEP_RUNNING_TOTALS_FOR as $column_name) {
+                if (!isset($statistics[$s3ObjectKey][$column_name])) {
+                    $statistics[$s3ObjectKey][$column_name] = 0;
+                }
+            }
+
+            if (!isset($statistics[$s3ObjectKey]['dates'])) {
+                $statistics[$s3ObjectKey]['dates'] = [];
+            }
+
+            $statistics[$s3ObjectKey]['downloads'] += 1;
+            $date = $this->parseLogDateString($item['time']);
+
+            if (!in_array($date, $statistics[$s3ObjectKey]['dates'])) {
+              array_push($statistics[$s3ObjectKey]['dates'], $date);
+            }
+
+            if (isset($item['bytes'])) {
+                if ($this->isDebugModeEnabled()) {
+                    print "DEBUG: OBJECT DOWNLOAD: " . $item['bytes'] . " bytes from " . $s3ObjectKey . "\n";
+                    print "\n" . print_r($item) . "\n\n";
                 }
 
-                if (!isset($statistics[$item['key']]['dates'])) {
-                    $statistics[$item['key']]['dates'] = [];
-                }
+                $statistics[$s3ObjectKey]['bandwidth'] += (int) $item['bytes'];
+            }
 
-                $statistics[$item['key']]['downloads'] += 1;
-                $date = $this->parseLogDateString($item['time']);
-
-                if (!in_array($date, $statistics[$item['key']]['dates'])) {
-                  array_push($statistics[$item['key']]['dates'], $date);
-                }
-
-                if (isset($item['bytes'])) {
-                    if ($this->debugMode()) {
-                        print "DEBUG: OBJECT DOWNLOAD: " . $item['bytes'] . " bytes from " . $item['key'] . "\n";
-                        print "\n" . print_r($item) . "\n\n";
-                    }
-
-                    $statistics[$item['key']]['bandwidth'] += (int) $item['bytes'];
-                }
-
-                // TODO: Sum milliseconds now; convert to minutes later.
-                if (isset($item['totaltime'])) {
-                    $totalRequestTimeInMinutes = (float) $item['totaltime'] / 1000.0 / 60.0;
-                    $statistics[$item['key']]['totalRequestTimeInMinutes'] += $totalRequestTimeInMinutes;
-                }
+            // TODO: Sum milliseconds now; convert to minutes later.
+            if (isset($item['totaltime'])) {
+                $totalRequestTimeInMinutes = (float) $item['totaltime'] / 1000.0 / 60.0;
+                $statistics[$s3ObjectKey]['totalRequestTimeInMinutes'] += $totalRequestTimeInMinutes;
             }
         }
 
@@ -289,14 +294,14 @@ class S3LogsParser
                 }
 
                 $httpOperationCounts[$httpOperationName] += 1;
-            }
 
-            if (isset($matches['operation']) && $matches['operation'] == 'REST.GET.OBJECT') {
-                $processedLogs[] = $matches;
+                if ($httpOperationName == 'REST.GET.OBJECT') {
+                    $processedLogs[] = $matches;
+                }
             }
         }
 
-        if ($this->debugMode()) {
+        if ($this->isDebugModeEnabled()) {
             print "\n\nPROCESSED DATA:";
             var_dump($processedLogs);
         }
@@ -344,9 +349,9 @@ class S3LogsParser
     /**
      * @return true|false
      */
-    private function debugMode()
+    private function isDebugModeEnabled() : bool
     {
-        return $this->getConfig('debug_mode');
+        return $this->configs['debug_mode'];
     }
 }
 

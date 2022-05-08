@@ -104,6 +104,13 @@ $S3LogsParser->getStats($awsBucketName, $awsBucketPrefix, $date);
 ## Development
 You can set the optional configuration parameter `debug_mode` to see a more verbose output.
 
+```php
+$S3LogsParser = new S3LogsParser\S3LogsParser([
+    'local_log_dir' => '/path/to/logs',
+    'debug_mode' => 'true',
+]);
+```
+
 ## License
 
 AWS S3 Logs Parser is open source and available under the [MIT License](LICENSE.md).
