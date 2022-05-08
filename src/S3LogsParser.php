@@ -295,6 +295,7 @@ class S3LogsParser
 
                 $httpOperationCounts[$httpOperationName] += 1;
 
+                // TODO: this seems wrong.  We want to append to $processedLogs, not replace it!
                 if ($httpOperationName == 'REST.GET.OBJECT') {
                     $processedLogs[] = $matches;
                 }
