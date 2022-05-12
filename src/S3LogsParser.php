@@ -205,6 +205,8 @@ class S3LogsParser
         $statistics = [];
 
         foreach ($parsedLogs as $item) {
+            var_dump($item);
+            
             if (!isset($item['key']) || !mb_strlen($item['key'])) {
                 print "WARNING: Missing key in log line; skipping:\n" . $item;
                 continue;
