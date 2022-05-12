@@ -32,7 +32,8 @@ class S3LogsParser
         '(?P<status>\S+) (?P<error>\S+) (?P<bytes>\S+) (?P<size>\S+) (?P<totaltime>\S+) '.
         '(?P<turnaround>\S+) (?P<referrer>"[^"]*") (?P<useragent>"[^"]*") (?P<version>\S)/';
 
-    const COLUMNS_TO_KEEP_RUNNING_TOTALS_FOR = ['totaltime', 'downloads', 'bandwidth', 'totalRequestTimeInMinutes'];
+    const METRICS_TO_KEEP_RUNNING_TOTALS_FOR = ['totaltime', 'downloads', 'bandwidth', 'totalRequestTimeInMinutes'];
+
 
     /**
      * S3LogsParser constructor.
@@ -171,7 +172,7 @@ class S3LogsParser
     {
       $logLines = [];
       $httpOperationCounts = [];
-      print "Reading files from local directory: " . $logDir . "\n";
+      print "Reading files from local directory: " . $logDir . "...\n";
 
       foreach (new \DirectoryIterator($logDir) as $file) {
           if ($file->isFile()) {
@@ -199,11 +200,7 @@ class S3LogsParser
         $httpOperationCounts = [];
 
         foreach ($parsedLogs as $item) {
-            if (!isset($item['key']) || !mb_strlen($item['key'])) {
-                print "WARNING: Missing key in log line; skipping:\n" . $item;
-                continue;
-            }
-
+            // Count operations
             $httpOperation = $item['operation'];
 
             if (!array_key_exists($httpOperation, $httpOperationCounts)) {
@@ -217,31 +214,33 @@ class S3LogsParser
                 continue;
             }
 
+            if (!isset($item['key']) || !mb_strlen($item['key'])) {
+                print "WARNING: Missing key in log line; skipping:\n" . $item;
+                continue;
+            }
+
             $s3ObjectKey = $item['key'];
 
-            foreach(self::COLUMNS_TO_KEEP_RUNNING_TOTALS_FOR as $column_name) {
-                if (!isset($statistics[$s3ObjectKey][$column_name])) {
-                    $statistics[$s3ObjectKey][$column_name] = 0;
+            foreach(self::METRICS_TO_KEEP_RUNNING_TOTALS_FOR as $metricName) {
+                if (!isset($statistics[$s3ObjectKey][$metricName])) {
+                    $statistics[$s3ObjectKey][$metricName] = 0;
                 }
             }
+
+            // Count downloads and maintain list of access dates
+            $statistics[$s3ObjectKey]['downloads'] += 1;
+            $date = $this->parseLogDateString($item['time']);
 
             if (!isset($statistics[$s3ObjectKey]['dates'])) {
                 $statistics[$s3ObjectKey]['dates'] = [];
             }
 
-            $statistics[$s3ObjectKey]['downloads'] += 1;
-            $date = $this->parseLogDateString($item['time']);
-
             if (!in_array($date, $statistics[$s3ObjectKey]['dates'])) {
                 $statistics[$s3ObjectKey]['dates'][] = $date;
             }
 
+            // Track bandwidth bytes transferred
             if (isset($item['bytes'])) {
-                if ($this->isDebugModeEnabled()) {
-                    print "DEBUG: OBJECT DOWNLOAD: " . $item['bytes'] . " bytes from " . $s3ObjectKey . "\n";
-                    print "\n" . print_r($item) . "\n\n";
-                }
-
                 $statistics[$s3ObjectKey]['bandwidth'] += (int) $item['bytes'];
             }
 
@@ -293,7 +292,10 @@ class S3LogsParser
         foreach ($rows as $row) {
             // Skip rows containing exclusion string
             if (!empty($excludeLinesWithSubstring) && str_contains($row, $excludeLinesWithSubstring)) {
-              print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
+              if ($this->isDebugModeEnabled()) {
+                  print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
+              }
+
               $excludedRowsCount += 1;
               continue;
             }
