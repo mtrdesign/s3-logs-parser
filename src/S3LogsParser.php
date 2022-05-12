@@ -267,7 +267,7 @@ class S3LogsParser
 
     /**
      * Process a string containing 0-n lines of logs
-     * 
+     *
      * @param string $logsString
      *
      * @return array
@@ -280,10 +280,10 @@ class S3LogsParser
         $excludedRowsCount = 0;
 
         foreach ($rows as $row) {
-            $exclude_lines_with_substring = $this->getConfig('exclude_lines_with_substring');
+            $excludeLinesWithSubstring = $this->getConfig('exclude_lines_with_substring');
 
             // Skip rows containing exclusion string
-            if (!empty($exclude_lines_with_substring) && str_contains($row, $exclude_lines_with_substring)) {
+            if (!empty($excludeLinesWithSubstring) && str_contains($row, $excludeLinesWithSubstring)) {
               print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
               $excludedRowsCount += 1;
               continue;
