@@ -275,7 +275,7 @@ class S3LogsParser
     }
 
     /**
-     * Process a string containing 0-n lines of logs
+     * Process a string containing 0 or more lines of logs
      *
      * @param string $logsString
      *
