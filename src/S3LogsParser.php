@@ -175,10 +175,10 @@ class S3LogsParser
           if ($file->isFile()) {
               $fileContents = file_get_contents($file->getPathname(), true);
               $processedLogs = $this->processLogsStringToArray($fileContents);
-              $logLines = array_merge($logLines, $processedLogs['output']);
+              $logLines = array_merge($logLines, $processedLogs['getObjectRequestLogs']);
 
               if ($this->isDebugModeEnabled()) {
-                print 'Read ' . count($processedLogs['output']) . ' lines from file: ' . $file->getFilename() . "...\n";
+                  print 'Read ' . count($processedLogs['rowCount']) . ' lines from ' . $file->getFilename() . "\n";
               }
 
               foreach ($processedLogs['httpOperationCounts'] as $httpOperationName => $count) {
@@ -275,13 +275,14 @@ class S3LogsParser
     public function processLogsStringToArray(string $logsString) : array
     {
         $rows = explode("\n", $logsString);
-        $processedLogs = [];
+        $requestLogs = [];
+        $getObjectRequestLogs = [];
         $httpOperationCounts = [];
+
         $excludedRowsCount = 0;
+        $excludeLinesWithSubstring = $this->getConfig('exclude_lines_with_substring');
 
         foreach ($rows as $row) {
-            $excludeLinesWithSubstring = $this->getConfig('exclude_lines_with_substring');
-
             // Skip rows containing exclusion string
             if (!empty($excludeLinesWithSubstring) && str_contains($row, $excludeLinesWithSubstring)) {
               print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
@@ -291,32 +292,35 @@ class S3LogsParser
 
             preg_match($this->regex, $row, $matches);
 
-            if (array_key_exists('operation', $matches)) {
-                $httpOperationName = $matches['operation'];
+            if (!array_key_exists('operation', $matches)) {
+                print 'WARNING: No operation found in ' . $row . '\n';
+                continue;
+            }
 
-                if (!array_key_exists($httpOperationName, $httpOperationCounts)) {
-                    $httpOperationCounts[$httpOperationName] = 0;
-                }
+            array_push($requestLogs, $matches);
+            $httpOperationName = $matches['operation'];
 
-                $httpOperationCounts[$httpOperationName] += 1;
+            if (!array_key_exists($httpOperationName, $httpOperationCounts)) {
+                $httpOperationCounts[$httpOperationName] = 0;
+            }
 
-                // TODO: this seems wrong.  We want to append to $processedLogs, not replace it!
-                if ($httpOperationName == 'REST.GET.OBJECT') {
-                    $processedLogs[] = $matches;
-                }
+            $httpOperationCounts[$httpOperationName] += 1;
+
+            if ($httpOperationName == 'REST.GET.OBJECT') {
+                array_push($getObjectRequestLogs, $matches);
             }
         }
 
         if ($this->isDebugModeEnabled()) {
-            print "\n\nPROCESSED DATA:";
-            var_dump($processedLogs);
+            print "\n\nREST.GET.OBJECT processed log lines:\n";
+            var_dump($getObjectRequestLogs);
         }
 
         return [
             'httpOperationCounts' => $httpOperationCounts,
-            'output' => $processedLogs,
+            'getObjectRequestLogs' => $getObjectRequestLogs,
             'rowCount' => count($rows),
-            '$excludedRowsCount' => $$excludedRowsCount = 0,
+            'excludedRowsCount' => $excludedRowsCount,
         ];
     }
 
