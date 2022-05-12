@@ -85,7 +85,7 @@ class S3LogsParser
      *
      * @return array
      */
-    public function getStats($bucketName = null, $bucketPrefix = null, $date = null) : array
+    public function getStatsAsArray($bucketName = null, $bucketPrefix = null, $date = null) : array
     {
         if (array_key_exists('local_log_dir', $this->configs)) {
           $logsLocation = $this->getConfig('local_log_dir');
@@ -111,13 +111,15 @@ class S3LogsParser
     }
 
     /**
+     * TODO: Should probably get renamed getStatsAsJSON or similar
+     *
      * @param string $bucketName
      * @param string $bucketPrefix
      * @param string $date
      *
      * @return string|false
      */
-    public function getStatsAsJSON($bucketName = null, $prefix = null, $date = null) : string
+    public function getStats($bucketName = null, $prefix = null, $date = null) : string
     {
       $logStats = ['data' => $this->getStats($bucketName, $prefix, $date)];
 
@@ -198,7 +200,7 @@ class S3LogsParser
      *
      * @return hash
      */
-    public function computeStatistics(array $parsedLogs)
+    public function computeStatistics(array $parsedLogs) : array
     {
         $statistics = [];
 
@@ -264,6 +266,8 @@ class S3LogsParser
     }
 
     /**
+     * Process a string containing 0-n lines of logs
+     * 
      * @param string $logsString
      *
      * @return array
