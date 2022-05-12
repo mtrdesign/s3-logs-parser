@@ -121,11 +121,11 @@ class S3LogsParser
      */
     public function getStats($bucketName = null, $prefix = null, $date = null) : string
     {
-      $logStats = ['data' => $this->getStats($bucketName, $prefix, $date)];
+      $logStats = $this->getStatsAsArray($bucketName, $prefix, $date);
 
       if (!is_null($bucketName)) {
-        $logStats['bucket'] = $bucketName;
-        $logStats['prefix'] = $prefix;
+          $logStats['bucket'] = $bucketName;
+          $logStats['prefix'] = $prefix;
       }
 
       return json_encode([
@@ -141,18 +141,20 @@ class S3LogsParser
      */
     public function loadLogsFromS3(string $bucketName, string $bucketPrefix, $date) : array
     {
+        print 'Reading from S3 bucket ' . $bucketName . ' with prefix: ' . $bucketPrefix . ', date: ' . $date . '...';
+
         $listObjectsParams = [
             'Bucket' => $bucketName,
             'Prefix' => $bucketPrefix + (is_null($date) ? '' : Carbon::parse($date)->format('Y-m-d')),
         ];
 
-        $results = $this->getClient()->getPaginator('ListObjects', $listObjectsParams);
         $logLines = [];
+        $results = $this->getClient()->getPaginator('ListObjects', $listObjectsParams);
 
         foreach ($results as $result) {
             if (isset($result['Contents'])) {
                 foreach ($result['Contents'] as $object) {
-                    $logLines += $this->parseS3Object($bucketName, $object['Key']);
+                    $logLines = array_merge($logLines, $this->parseS3Object($bucketName, $object['Key']));
                 }
             }
         }
@@ -169,29 +171,20 @@ class S3LogsParser
     {
       $logLines = [];
       $httpOperationCounts = [];
-      print "Reading files from " . $logDir . "\n";
+      print "Reading files from local directory: " . $logDir . "\n";
 
       foreach (new \DirectoryIterator($logDir) as $file) {
           if ($file->isFile()) {
               $fileContents = file_get_contents($file->getPathname(), true);
-              $processedLogs = $this->processLogsStringToArray($fileContents);
-              $logLines = array_merge($logLines, $processedLogs['getObjectRequestLogs']);
+              $processedLogs = $this->processLogsString($fileContents);
+              $logLines = array_merge($logLines, $processedLogs['requestLogs']);
 
               if ($this->isDebugModeEnabled()) {
                   print 'Read ' . count($processedLogs['rowCount']) . ' lines from ' . $file->getFilename() . "\n";
               }
-
-              foreach ($processedLogs['httpOperationCounts'] as $httpOperationName => $count) {
-                  if (!array_key_exists($httpOperationName, $httpOperationCounts)) {
-                      $httpOperationCounts[$httpOperationName] = 0;
-                  }
-
-                  $httpOperationCounts[$httpOperationName] += (int) $count;
-              }
           }
       }
 
-      print "\n\n****HTTP OPERATION COUNTS****\n" . print_r($httpOperationCounts);
       return $logLines;
     }
 
@@ -203,12 +196,24 @@ class S3LogsParser
     public function computeStatistics(array $parsedLogs) : array
     {
         $statistics = [];
+        $httpOperationCounts = [];
 
         foreach ($parsedLogs as $item) {
-            var_dump($item);
-            
             if (!isset($item['key']) || !mb_strlen($item['key'])) {
                 print "WARNING: Missing key in log line; skipping:\n" . $item;
+                continue;
+            }
+
+            $httpOperation = $item['operation'];
+
+            if (!array_key_exists($httpOperation, $httpOperationCounts)) {
+                $httpOperationCounts[$httpOperation] = 0;
+            }
+
+            $httpOperationCounts[$httpOperation] += 1;
+
+            // Only GET requests get the extra processing around bytes, request time, etc.
+            if ($httpOperation != 'REST.GET.OBJECT') {
                 continue;
             }
 
@@ -228,7 +233,7 @@ class S3LogsParser
             $date = $this->parseLogDateString($item['time']);
 
             if (!in_array($date, $statistics[$s3ObjectKey]['dates'])) {
-              array_push($statistics[$s3ObjectKey]['dates'], $date);
+                $statistics[$s3ObjectKey]['dates'][] = $date;
             }
 
             if (isset($item['bytes'])) {
@@ -248,7 +253,10 @@ class S3LogsParser
             }
         }
 
-        return $statistics;
+        return [
+            'data' => $statistics,
+            'httpOperationCounts' => $httpOperationCounts,
+        ];
     }
 
     /**
@@ -264,7 +272,7 @@ class S3LogsParser
             'Key' => $key,
         ]);
 
-        return $this->processLogsStringToArray((string) $file['Body']);
+        return $this->processLogsString((string) $file['Body']);
     }
 
     /**
@@ -274,13 +282,11 @@ class S3LogsParser
      *
      * @return array
      */
-    public function processLogsStringToArray(string $logsString) : array
+    public function processLogsString(string $logsString) : array
     {
         $rows = explode("\n", $logsString);
         $requestLogs = [];
-        $getObjectRequestLogs = [];
         $httpOperationCounts = [];
-
         $excludedRowsCount = 0;
         $excludeLinesWithSubstring = $this->getConfig('exclude_lines_with_substring');
 
@@ -294,33 +300,18 @@ class S3LogsParser
 
             preg_match($this->regex, $row, $matches);
 
-            if (!array_key_exists('operation', $matches)) {
-                print 'WARNING: No operation found in ' . $row . '\n';
-                continue;
-            }
-
-            array_push($requestLogs, $matches);
-            $httpOperationName = $matches['operation'];
-
-            if (!array_key_exists($httpOperationName, $httpOperationCounts)) {
-                $httpOperationCounts[$httpOperationName] = 0;
-            }
-
-            $httpOperationCounts[$httpOperationName] += 1;
-
-            if ($httpOperationName == 'REST.GET.OBJECT') {
-                array_push($getObjectRequestLogs, $matches);
+            if (array_key_exists('operation', $matches)) {
+                $requestLogs[] = $matches;
             }
         }
 
         if ($this->isDebugModeEnabled()) {
-            print "\n\nREST.GET.OBJECT processed log lines:\n";
-            var_dump($getObjectRequestLogs);
+            print "\n\nProcessed log lines:\n";
+            var_dump($requestLogs);
         }
 
         return [
-            'httpOperationCounts' => $httpOperationCounts,
-            'getObjectRequestLogs' => $getObjectRequestLogs,
+            'requestLogs' => $requestLogs,
             'rowCount' => count($rows),
             'excludedRowsCount' => $excludedRowsCount,
         ];
