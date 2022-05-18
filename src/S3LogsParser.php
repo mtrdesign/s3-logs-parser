@@ -7,7 +7,9 @@ use Aws\S3\S3Client;
 use Carbon\Carbon;
 
 
-class S3LogsParserException extends \Exception { }
+class S3LogsParserException extends \Exception
+{
+}
 
 
 class S3LogsParser
@@ -89,23 +91,23 @@ class S3LogsParser
     public function getStatsAsArray($bucketName = null, $bucketPrefix = null, $date = null) : array
     {
         if (array_key_exists('local_log_dir', $this->configs)) {
-          $logsLocation = $this->getConfig('local_log_dir');
+            $logsLocation = $this->getConfig('local_log_dir');
 
-          if (!is_dir($logsLocation)) {
-              throw new S3LogsParserException($logsLocation . ' is not a directory!');
-          }
+            if (!is_dir($logsLocation)) {
+                throw new S3LogsParserException($logsLocation . ' is not a directory!');
+            }
 
-          if (isset($date)) {
-              print "WARNING: date parameter is not currently supported for local files.";
-          }
+            if (isset($date)) {
+                print "WARNING: date parameter is not currently supported for local files.";
+            }
 
-          $logLines = $this->loadLogsFromLocalDir($logsLocation);
+            $logLines = $this->loadLogsFromLocalDir($logsLocation);
         } else {
-          if (is_null($bucketName)) {
-              throw new S3LogsParserException('bucketName not provided!');
-          }
+            if (is_null($bucketName)) {
+                throw new S3LogsParserException('bucketName not provided!');
+            }
 
-          $logLines = $this->loadLogsFromS3($bucketName, $bucketPrefix, $date);
+            $logLines = $this->loadLogsFromS3($bucketName, $bucketPrefix, $date);
         }
 
         return $this->computeStatistics($logLines);
@@ -122,17 +124,17 @@ class S3LogsParser
      */
     public function getStats($bucketName = null, $prefix = null, $date = null) : string
     {
-      $logStats = $this->getStatsAsArray($bucketName, $prefix, $date);
+        $logStats = $this->getStatsAsArray($bucketName, $prefix, $date);
 
-      if (!is_null($bucketName)) {
-          $logStats['bucket'] = $bucketName;
-          $logStats['prefix'] = $prefix;
-      }
+        if (!is_null($bucketName)) {
+            $logStats['bucket'] = $bucketName;
+            $logStats['prefix'] = $prefix;
+        }
 
-      return json_encode([
-          'success' => true,
-          'statistics' => $logStats,
-      ]);
+        return json_encode([
+            'success' => true,
+            'statistics' => $logStats,
+        ]);
     }
 
     /**
@@ -170,23 +172,23 @@ class S3LogsParser
      */
     public function loadLogsFromLocalDir(string $logDir) : array
     {
-      $logLines = [];
-      $httpOperationCounts = [];
-      print "Reading files from local directory: " . $logDir . "...\n";
+        $logLines = [];
+        $httpOperationCounts = [];
+        print "Reading files from local directory: " . $logDir . "...\n";
 
-      foreach (new \DirectoryIterator($logDir) as $file) {
-          if ($file->isFile()) {
-              $fileContents = file_get_contents($file->getPathname(), true);
-              $processedLogs = $this->processLogsString($fileContents);
-              $logLines = array_merge($logLines, $processedLogs['requestLogs']);
+        foreach (new \DirectoryIterator($logDir) as $file) {
+            if ($file->isFile()) {
+                $fileContents = file_get_contents($file->getPathname(), true);
+                $processedLogs = $this->processLogsString($fileContents);
+                $logLines = array_merge($logLines, $processedLogs['requestLogs']);
 
-              if ($this->isDebugModeEnabled()) {
-                  print 'Read ' . count($processedLogs['rowCount']) . ' lines from ' . $file->getFilename() . "\n";
-              }
-          }
-      }
+                if ($this->isDebugModeEnabled()) {
+                    print 'Read ' . count($processedLogs['rowCount']) . ' lines from ' . $file->getFilename() . "\n";
+                }
+            }
+        }
 
-      return $logLines;
+        return $logLines;
     }
 
     /**
@@ -221,7 +223,7 @@ class S3LogsParser
 
             $s3ObjectKey = $item['key'];
 
-            foreach(self::METRICS_TO_KEEP_RUNNING_TOTALS_FOR as $metricName) {
+            foreach (self::METRICS_TO_KEEP_RUNNING_TOTALS_FOR as $metricName) {
                 if (!isset($statistics[$s3ObjectKey][$metricName])) {
                     $statistics[$s3ObjectKey][$metricName] = 0;
                 }
@@ -292,12 +294,12 @@ class S3LogsParser
         foreach ($rows as $row) {
             // Skip rows containing exclusion string
             if (!empty($excludeLinesWithSubstring) && str_contains($row, $excludeLinesWithSubstring)) {
-              if ($this->isDebugModeEnabled()) {
-                  print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
-              }
+                if ($this->isDebugModeEnabled()) {
+                    print "WARNING: Skipping excluded row:\n" . $row . "\n\n";
+                }
 
-              $excludedRowsCount += 1;
-              continue;
+                $excludedRowsCount += 1;
+                continue;
             }
 
             preg_match($this->regex, $row, $matches);
@@ -359,5 +361,3 @@ class S3LogsParser
         return $this->configs['debug_mode'];
     }
 }
-
-?>
