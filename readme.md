@@ -7,6 +7,13 @@
 [![StyleCI](https://styleci.io/repos/191744669/shield?style=flat-square)](https://styleci.io/repos/191744669)
 [![PHPStan](https://img.shields.io/badge/PHPStan-enabled-44CC11.svg?longCache=true)](https://github.com/phpstan/phpstan)
 
+* [Getting Started](#getting-started)
+* [Usage](#usage)
+* [Contributing](#contributing)
+  * [Requirements](#requirements)
+  * [Installation steps](#installation-steps)
+* [License](#license)
+
 AWS S3 Logs Parser is a simple [PHP](https://php.net/) package to parse [Amazon Simple Storage Service (Amazon S3)](https://aws.amazon.com/s3/) logs into a readable JSON format. The detailed usage report will show you how much times a file is downloaded and how much bytes are transferred.
 
 ## Getting Started
@@ -88,6 +95,25 @@ This is how service response should look like:
     }
 }
 ```
+
+## Contributing
+
+Ensure all the guides are followed and style/test checkers pass before pushing your code.
+
+### Requirements
+
+* [Git](https://git-scm.com)
+* [Docker](https://docker.com)
+* [Docker Compose](https://docs.docker.com/compose)
+* [GNU Make](https://www.gnu.org/software/make)
+
+### Installation steps
+
+1. Build the required services and Docker container with `$ make docker-build`
+2. SSH into the container with `$ make docker-bash`
+3. Confirm [code style checker](https://github.com/squizlabs/php_codesniffer) passes with `$ make run-phpcs`
+4. Confirm [code quality checker](https://github.com/phpstan/phpstan) passes with `$ make run-phpstan`
+5. Confirm [code texts checker](https://github.com/sebastianbergmann/phpunit) passes with `$ make run-phpunit`
 
 ## License
 
