@@ -126,7 +126,7 @@ class S3LogsParser
 
         if (!is_null($bucketName)) {
             $logStats['bucket'] = $bucketName;
-            $logStats['prefix'] = $prefix;
+            $logStats['prefix'] = $prefix . (is_null($date) ? '' : Carbon::parse($date)->format('Y-m-d'));
         }
 
         return json_encode(['success' => true, 'statistics' => $logStats]) ?: '';
@@ -154,7 +154,7 @@ class S3LogsParser
         foreach ($results as $result) {
             if (isset($result['Contents'])) {
                 foreach ($result['Contents'] as $object) {
-                    $logLines = array_merge($logLines, $this->parseS3Object($bucketName, $object['Key']));
+                    $logLines = array_merge($logLines, $this->parseS3Object($bucketName, $object['Key'])['requestLogs']);
                 }
             }
         }
