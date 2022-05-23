@@ -129,10 +129,7 @@ class S3LogsParser
             $logStats['prefix'] = $prefix;
         }
 
-        return json_encode([
-            'success' => true,
-            'statistics' => $logStats,
-        ]) ?: '';
+        return json_encode(['success' => true, 'statistics' => $logStats]) ?: '';
     }
 
     /**
