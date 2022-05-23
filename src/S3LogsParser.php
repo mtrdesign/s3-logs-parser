@@ -2,6 +2,8 @@
 
 namespace S3LogsParser;
 
+ini_set('memory_limit', '256M');
+
 use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
@@ -113,12 +115,12 @@ class S3LogsParser
      * TODO: Should probably get renamed getStatsAsJSON or similar
      *
      * @param string $bucketName
-     * @param string $bucketPrefix
+     * @param string $prefix
      * @param string $date
      *
-     * @return string|false
+     * @return string
      */
-    public function getStats($bucketName = null, $prefix = null, $date = null) : string
+    public function getStats(string $bucketName = null, string $prefix = null, $date = null) : string
     {
         $logStats = $this->getStatsAsArray($bucketName, $prefix, $date);
 
@@ -130,13 +132,15 @@ class S3LogsParser
         return json_encode([
             'success' => true,
             'statistics' => $logStats,
-        ]);
+        ]) ?: '';
     }
 
     /**
-     * @param string $parsedLogs
+     * @param string $bucketName
+     * @param string $bucketPrefix
+     * @param string $date
      *
-     * @return hash
+     * @return array
      */
     public function loadLogsFromS3(string $bucketName, string $bucketPrefix, $date) : array
     {
@@ -144,7 +148,7 @@ class S3LogsParser
 
         $listObjectsParams = [
             'Bucket' => $bucketName,
-            'Prefix' => $bucketPrefix + (is_null($date) ? '' : Carbon::parse($date)->format('Y-m-d')),
+            'Prefix' => $bucketPrefix . (is_null($date) ? '' : Carbon::parse($date)->format('Y-m-d')),
         ];
 
         $logLines = [];
@@ -188,9 +192,9 @@ class S3LogsParser
     }
 
     /**
-     * @param string $parsedLogs
+     * @param array $parsedLogs
      *
-     * @return hash
+     * @return array
      */
     public function computeStatistics(array $parsedLogs) : array
     {
@@ -339,7 +343,7 @@ class S3LogsParser
     /**
      * @param string $dateString
      *
-     * @return date
+     * @return string
      */
     private function parseLogDateString(string $dateString)
     {
