@@ -6,11 +6,7 @@ use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 
-
-class S3LogsParserException extends \Exception
-{
-}
-
+use S3LogsParser\S3LogsParserException;
 
 class S3LogsParser
 {
