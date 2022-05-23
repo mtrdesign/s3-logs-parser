@@ -88,9 +88,9 @@ class S3LogsParser
      */
     public function getStatsAsArray($bucketName = null, $bucketPrefix = null, $date = null) : array
     {
-        if (array_key_exists('local_log_dir', $this->configs)) {
-            $logsLocation = $this->getConfig('local_log_dir');
+        $logsLocation = $this->getConfig('local_log_dir');
 
+        if (!empty($logsLocation)) {
             if (!is_dir($logsLocation)) {
                 throw new S3LogsParserException($logsLocation . ' is not a directory!');
             }

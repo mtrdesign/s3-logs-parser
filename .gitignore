@@ -3,3 +3,4 @@ vendor
 coverage.xml
 tests/coverage
 .DS_Store
+.phpunit.result.cache
